@@ -1,3 +1,9 @@
+nodejs-npm (1.0.6-0sg1) UNRELEASED; urgency=low
+
+  * UNRELEASED
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Wed, 11 May 2011 18:07:27 +0000
+
 nodejs-npm (1.0.6-0sg0) unstable; urgency=low
 
   * Debianized
