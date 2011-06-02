@@ -1,7 +1,7 @@
 .\" Generated with Ronnjs/v0.1
 .\" http://github.com/kapouer/ronnjs/
 .
-.TH "NPM\-JSON" "1" "April 2011" "" ""
+.TH "NPM\-JSON" "1" "May 2011" "" ""
 .
 .SH "NAME"
 \fBnpm-json\fR \-\- Specifics of npm\'s package\.json handling
@@ -13,6 +13,34 @@ file\.  It must be actual JSON, not just a JavaScript object literal\.
 .P
 A lot of the behavior described in this document is affected by the config
 settings described in \fBnpm help config\fR\|\.
+.
+.SH "DEFAULT VALUES"
+npm will default some values based on package contents\.
+.
+.IP "\(bu" 4
+\fB"scripts": {"start": "node server\.js"}\fR
+.
+.IP
+If there is a \fBserver\.js\fR file in the root of your package, then npm
+will default the \fBstart\fR command to \fBnode server\.js\fR\|\.
+.
+.IP "\(bu" 4
+\fB"scripts":{"preinstall": "node\-waf clean || true; node\-waf configure build"}\fR
+.
+.IP
+If there is a \fBwscript\fR file in the root of your package, npm will
+default the \fBpreinstall\fR command to compile using node\-waf\.
+.
+.IP "\(bu" 4
+\fB"contributors": [\.\.\.]\fR
+.
+.IP
+If there is an \fBAUTHORS\fR file in the root of your package, npm will
+treat each line as a \fBName <email> (url)\fR format, where email and url
+are optional\.  Lines which start with a \fB#\fR or are blank, will be
+ignored\.
+.
+.IP "" 0
 .
 .SH "name"
 The \fImost\fR important things in your package\.json are the name and version fields\.
@@ -222,6 +250,9 @@ result from \fBman <pkgname>\fR, regardless of its actual filename\.  For exampl
 .
 .nf
 { "name" : "foo"
+, "version" : "1\.2\.3"
+, "description" : "A packaged foo fooer for fooing foos"
+, "main" : "foo\.js"
 , "man" : "\./man/doc\.1"
 }
 .
@@ -240,6 +271,9 @@ So, this:
 .
 .nf
 { "name" : "foo"
+, "version" : "1\.2\.3"
+, "description" : "A packaged foo fooer for fooing foos"
+, "main" : "foo\.js"
 , "man" : [ "\./man/foo\.1", "\./man/bar\.1" ]
 }
 .
@@ -258,6 +292,9 @@ compressed\.  The number dictates which man section the file is installed into\.
 .
 .nf
 { "name" : "foo"
+, "version" : "1\.2\.3"
+, "description" : "A packaged foo fooer for fooing foos"
+, "main" : "foo\.js"
 , "man" : [ "\./man/foo\.1", "\./man/foo\.2" ]
 }
 .
@@ -562,6 +599,17 @@ if it is installed locally\.
 .P
 It doesn\'t actually prevent users from installing it locally, but it
 does help prevent some confusion if it doesn\'t work as expected\.
+.
+.SH "private"
+If you set \fB"private": true\fR in your package\.json, then npm will refuse
+to publish it\.
+.
+.P
+This is a way to prevent accidental publication of private repositories\.
+If you would like to ensure that a given package is only ever published
+to a speciic registry (for example, an internal registry),
+then use the \fBpublishConfig\fR hash described below
+to override the \fBregistry\fR config param at publish\-time\.
 .
 .SH "publishConfig"
 This is a set of config values that will be used at publish\-time\.  It\'s

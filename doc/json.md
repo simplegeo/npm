@@ -9,6 +9,27 @@ file.  It must be actual JSON, not just a JavaScript object literal.
 A lot of the behavior described in this document is affected by the config
 settings described in `npm help config`.
 
+## DEFAULT VALUES
+
+npm will default some values based on package contents.
+
+* `"scripts": {"start": "node server.js"}`
+
+  If there is a `server.js` file in the root of your package, then npm
+  will default the `start` command to `node server.js`.
+
+* `"scripts":{"preinstall": "node-waf clean || true; node-waf configure build"}`
+
+  If there is a `wscript` file in the root of your package, npm will
+  default the `preinstall` command to compile using node-waf.
+
+* `"contributors": [...]`
+
+  If there is an `AUTHORS` file in the root of your package, npm will
+  treat each line as a `Name <email> (url)` format, where email and url
+  are optional.  Lines which start with a `#` or are blank, will be
+  ignored.
+
 ## name
 
 The *most* important things in your package.json are the name and version fields.
@@ -160,6 +181,9 @@ If only a single file is provided, then it's installed such that it is the
 result from `man <pkgname>`, regardless of its actual filename.  For example:
 
     { "name" : "foo"
+    , "version" : "1.2.3"
+    , "description" : "A packaged foo fooer for fooing foos"
+    , "main" : "foo.js"
     , "man" : "./man/doc.1"
     }
 
@@ -169,6 +193,9 @@ If the filename doesn't start with the package name, then it's prefixed.
 So, this:
 
     { "name" : "foo"
+    , "version" : "1.2.3"
+    , "description" : "A packaged foo fooer for fooing foos"
+    , "main" : "foo.js"
     , "man" : [ "./man/foo.1", "./man/bar.1" ]
     }
 
@@ -178,6 +205,9 @@ Man files must end with a number, and optionally a `.gz` suffix if they are
 compressed.  The number dictates which man section the file is installed into.
 
     { "name" : "foo"
+    , "version" : "1.2.3"
+    , "description" : "A packaged foo fooer for fooing foos"
+    , "main" : "foo.js"
     , "man" : [ "./man/foo.1", "./man/foo.2" ]
     }
 
@@ -392,6 +422,17 @@ if it is installed locally.
 
 It doesn't actually prevent users from installing it locally, but it
 does help prevent some confusion if it doesn't work as expected.
+
+## private
+
+If you set `"private": true` in your package.json, then npm will refuse
+to publish it.
+
+This is a way to prevent accidental publication of private repositories.
+If you would like to ensure that a given package is only ever published
+to a speciic registry (for example, an internal registry),
+then use the `publishConfig` hash described below
+to override the `registry` config param at publish-time.
 
 ## publishConfig
 

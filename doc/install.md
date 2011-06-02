@@ -16,10 +16,30 @@ npm-install(1) -- install a package
 
 This command installs a package, and any packages that it depends on.
 
-* npm install (in package directory):
+A `package` is:
+
+* a) a folder containing a program described by a package.json file
+* b) a gzipped tarball containing (a)
+* c) a url that resolves to (b)
+* d) a `<name>@<version>` that is published on the registry with (c)
+* e) a `<name>@<tag>` that points to (d)
+* f) a `<name>` that has a "latest" tag satisfying (e)
+
+Even if you never publish your package, you can still get a lot of
+benefits of using npm if you just want to write a node program (a), and
+perhaps if you also want to be able to easily install it elsewhere
+after packing it up into a tarball (b).
+
+
+* npm install (in package directory, no arguments):
   Install the dependencies in the local node_modules folder.
 
-  In global mode, it is the same as `npm install $PWD`
+  In global mode (ie, with `-g` or `--global` appended to the command),
+  it installs the current package context (ie, the current working
+  directory) as a global package.
+
+* npm install `<folder>`:
+  Install a package that is sitting in a folder on the filesystem.
 
 * npm install `<tarball file>`:
   Install a package that is sitting on the filesystem.  Note: if you just want
@@ -89,8 +109,18 @@ local copy exists on disk.
 
     npm install sax --force
 
+The `--global` argument will cause npm to install the package globally
+rather than locally.  See `npm help global`.
+
+The `--link` argument will cause npm to link global installs into the
+local space in some cases.
+
+See `npm help config`.  Many of the configuration params have some
+effect on installation, since that's most of what npm does.
+
 ## SEE ALSO
 
+* npm-config(1)
 * npm-build(1)
 * npm-registry(1)
 * npm-build(1)

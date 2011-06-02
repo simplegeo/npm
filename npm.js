@@ -60,6 +60,7 @@ var commandCache = {}
               , "r" : "uninstall"
               , "un" : "uninstall"
               , "unlink" : "uninstall"
+              , "remove" : "uninstall"
               , "rb" : "rebuild"
               , "list" : "ls"
               , "la" : "ls"
@@ -98,6 +99,7 @@ var commandCache = {}
               , "deprecate"
 
               , "help"
+              , "help-search"
               , "ls"
               , "search"
               , "view"
