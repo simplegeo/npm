@@ -3,6 +3,6 @@
 include /usr/share/cdbs/1/rules/debhelper.mk
 
 install/nodejs-npm::
-	npm_config_prefix=debian/nodejs-npm/usr node ./cli.js install -g
+	npm_config_prefix=debian/nodejs-npm/usr make dev
 	rm -rf debian/nodejs-npm/usr/lib/node_modules/npm/.pc
 	rm -rf debian/nodejs-npm/usr/lib/node_modules/npm/node_modules/node-uuid/test
