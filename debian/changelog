@@ -1,3 +1,14 @@
+nodejs-npm (1.0.22-0sg45) UNRELEASED; urgency=low
+
+  [ Wade Simmons ]
+  * fix debianization
+  * attempt to fix build
+  * build depends on git
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Thu, 28 Jul 2011 15:58:40 +0000
+
 nodejs-npm (1.0.22-0sg0) unstable; urgency=low
 
   * New upstream release
