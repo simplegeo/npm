@@ -9,15 +9,17 @@ This document will tell you what it puts where.
 
 ### tl;dr
 
-* Local install (default): puts stuff in ./node_modules
+* Local install (default): puts stuff in `./node_modules`
 * Global install (with `-g`): puts stuff in /usr/local
 * Install it **locally** if you're going to `require()` it.
 * Install it **globally** if you're going to run it on the command line.
+* If you need both, then install it in both places, or use `npm link`.
 
 ### prefix Configuration
 
-The `prefix` config defaults to node's `process.installPrefix`.  On most
-systems, this is `/usr/local`.
+The `prefix` config defaults to the location where node is installed.
+On most systems, this is `/usr/local`, and most of the time is the same
+as node's `process.installPrefix`.
 
 When the `global` flag is set, npm installs things into this prefix.
 When it is not set, it uses the root of the current package, or the
@@ -87,8 +89,7 @@ be found by npm scripts when necessary.
 
 ### Global Installation
 
-If the `global` configuration is set to true, or if it is not explicitly
-set false and no suitable node_modules folder was found, then npm will
+If the `global` configuration is set to true, then npm will
 install packages "globally".
 
 For global installation, packages are installed roughly the same way,
@@ -98,20 +99,20 @@ linked to `/usr/local/bin` instead of `./node_modules/.bin`.
 ### Cycles, Conflicts, and Folder Parsimony
 
 Cycles are handled using the property of node's module system that it
-walks up the directories looking for node_modules folders.  So, at every
-stage, if a package is already installed in an ancestor node_modules
+walks up the directories looking for `node_modules` folders.  So, at every
+stage, if a package is already installed in an ancestor `node_modules`
 folder, then it is not installed at the current location.
 
 Consider the case above, where `foo -> bar -> baz`.  Imagine if, in
 addition to that, baz depended on bar, so you'd have:
 `foo -> bar -> baz -> bar -> baz ...`.  However, since the folder
-structure is: foo/node_modules/bar/node_modules/baz, there's no need to
-put another copy of bar into .../baz/node_modules, since when it calls
+structure is: `foo/node_modules/bar/node_modules/baz`, there's no need to
+put another copy of bar into `.../baz/node_modules`, since when it calls
 require("bar"), it will get the copy that is installed in
-foo/node_modules/bar.
+`foo/node_modules/bar`.
 
 This shortcut is only used if the exact same
-version would be installed in multiple nested node_modules folders.  It
+version would be installed in multiple nested `node_modules` folders.  It
 is still possible to have `a/node_modules/b/node_modules/a` if the two
 "a" packages are different versions.  However, without repeating the
 exact same package multiple times, an infinite regress will always be
@@ -120,10 +121,14 @@ prevented.
 Another optimization can be made by installing dependencies at the
 highest level possible, below the localized "target" folder.
 
-For example, consider this dependency graph:
+#### Example
+
+Consider this dependency graph:
 
     foo
+    +-- blerg@1.2.5
     +-- bar@1.2.3
+    |   +-- blerg@1.x (latest=1.3.7)
     |   +-- baz@2.x
     |   |   `-- quux@3.x
     |   |       `-- bar@1.2.3 (cycle)
@@ -136,40 +141,45 @@ In this case, we might expect a folder structure like this:
 
     foo
     +-- node_modules
-        +-- bar (1.2.3) <---[A]
+        +-- blerg (1.2.5) <---[A]
+        +-- bar (1.2.3) <---[B]
         |   +-- node_modules
-        |   |   `-- baz (2.0.2) <---[B]
+        |   |   `-- baz (2.0.2) <---[C]
         |   |       `-- node_modules
         |   |           `-- quux (3.2.0)
         |   `-- asdf (2.3.4)
-        `-- baz (1.2.3) <---[C]
+        `-- baz (1.2.3) <---[D]
             `-- node_modules
-                `-- quux (3.2.0) <---[D]
+                `-- quux (3.2.0) <---[E]
 
 Since foo depends directly on bar@1.2.3 and baz@1.2.3, those are
-installed in foo's node_modules folder.
+installed in foo's `node_modules` folder.
 
-Bar [A] has dependencies on baz and asdf, so those are installed in bar's
-node_modules folder.  Because it depends on `baz@2.x`, it cannot re-use
-the `baz@1.2.3` installed in the parent node_modules folder [C], and
-must install its own copy [B].
+Even though the latest copy of blerg is 1.3.7, foo has a specific
+dependency on version 1.2.5.  So, that gets installed at [A].  Since the
+parent installation of blerg satisfie's bar's dependency on blerg@1.x,
+it does not install another copy under [B].
+
+Bar [B] also has dependencies on baz and asdf, so those are installed in
+bar's `node_modules` folder.  Because it depends on `baz@2.x`, it cannot
+re-use the `baz@1.2.3` installed in the parent `node_modules` folder [D],
+and must install its own copy [C].
 
 Underneath bar, the `baz->quux->bar` dependency creates a cycle.
-However, because `bar` is already in `quux`'s ancestry [A], it does not
+However, because `bar` is already in `quux`'s ancestry [B], it does not
 unpack another copy of bar into that folder.
 
-Underneath `foo->baz` [C], quux's [D] folder tree is empty, because its
-dependnecy on bar is satisfied by the parent folder copy installed at [A].
+Underneath `foo->baz` [D], quux's [E] folder tree is empty, because its
+dependency on bar is satisfied by the parent folder copy installed at [B].
 
 For a graphical breakdown of what is installed where, use `npm ls`.
 
 ### Publishing
 
-Upon publishing, npm will look in the node_modules folder.  If any of
-the items there are on the "dependencies" or "devDependencies" list,
-and are not in the `bundledDependencies` array, then they will not be
-included in the package tarball.
+Upon publishing, npm will look in the `node_modules` folder.  If any of
+the items there are not in the `bundledDependencies` array, then they will
+not be included in the package tarball.
 
 This allows a package maintainer to install all of their dependencies
 (and dev dependencies) locally, but only re-publish those items that
-cannot be found elsewhere.
+cannot be found elsewhere.  See `npm help json` for more information.

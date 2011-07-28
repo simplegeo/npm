@@ -90,6 +90,7 @@ The following shorthands are parsed on the command-line:
 * `-f`: `--force`
 * `-l`: `--long`
 * `-desc`: `--description`
+* `-S`: `--save`
 * `ll` and `la` commands: `ls --long`
 
 If the specified configuration param resolves unambiguously to a known
@@ -137,6 +138,15 @@ then the user could change the behavior by doing:
 
 Force npm to always require authentication when accessing the registry,
 even for `GET` requests.
+
+### bin-publish
+
+* Default: false
+* Type: Boolean
+
+If set to true, then binary packages will be created on publish.
+
+This is the way to opt into the "bindist" behavior described below.
 
 ### bindist
 
@@ -396,9 +406,20 @@ standard output.
 The location to install global items.  If set on the command line, then
 it forces non-global commands to run in the specified folder.
 
+### production
+
+* Default: false
+* Type: Boolean
+
+Set to true to run in "production" mode.
+
+1. devDependencies are not installed at the topmost level when running
+   local `npm install` without any arguments.
+2. Set the NODE_ENV="production" for lifecycle scripts.
+
 ### proxy
 
-* Default: "HTTP_PROXY" or "http_proxy" environment variable, or null
+* Default: `HTTP_PROXY` or `http_proxy` environment variable, or null
 * Type: url
 
 A proxy to use for outgoing http requests.
@@ -423,6 +444,15 @@ The base URL of the npm package registry.
 * Type: Boolean
 
 Remove failed installs.
+
+### save
+
+* Default: false
+* Type: Boolean
+
+Save installed packages to a package.json file as dependencies.
+
+Only works if there is already a package.json file present.
 
 ### searchopts
 

@@ -1,7 +1,7 @@
 { "name" : "npm"
 , "description" : "A package manager for node"
 , "keywords" : [ "package manager", "modules", "install", "package.json" ]
-, "version" : "1.0.8"
+, "version" : "1.0.22"
 , "preferGlobal" : true
 , "config" : { "publishtest" : false }
 , "homepage" : "http://npmjs.org/"
@@ -20,13 +20,25 @@
                   , "bin" : "./bin"
                   }
 , "main" : "npm"
-, "bin" : "./bin/npm.js"
+, "bin" : { "npm" : "./bin/npm.js"
+          , "npm_g" : "./bin/npm.js"
+          , "npm-g" : "./bin/npm.js" }
 , "dependencies" :
   { "semver" : "1"
+  , "slide" : "1"
   , "abbrev" : "1"
+  , "graceful-fs" : "1"
+  , "minimatch" : "0"
   , "nopt" : "1"
   , "node-uuid" : "1.2" }
-, "bundleDependencies" : [ "semver", "abbrev", "nopt", "node-uuid" ]
+, "bundleDependencies" :
+  [ "slide"
+  , "semver"
+  , "abbrev"
+  , "graceful-fs"
+  , "minimatch"
+  , "nopt"
+  , "node-uuid" ]
 , "devDependencies" : { "ronn" : "" }
 , "engines" : { "node" : "0.4 || 0.5", "npm" : "1" }
 , "scripts" : { "test" : "./test/run.sh"

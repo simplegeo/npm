@@ -4,9 +4,8 @@ var log = require("../lib/utils/log")
 log.waitForConfig()
 log.info("ok", "it worked if it ends with")
 
-var fs = require("../lib/utils/graceful-fs")
+var fs = require("graceful-fs")
   , path = require("path")
-  , sys = require("../lib/utils/sys")
   , npm = require("../npm")
   , ini = require("../lib/utils/ini")
   , rm = require("../lib/utils/rm-rf")
@@ -16,6 +15,12 @@ var fs = require("../lib/utils/graceful-fs")
   , shorthands = configDefs.shorthands
   , types = configDefs.types
   , nopt = require("nopt")
+
+// if npm is called as "npmg" or "npm_g", then
+// run in global mode.
+if(path.basename(process.argv[1]).slice(-1)  === "g") {
+  process.argv.splice(1, 1, "npm", "-g")
+}
 
 log.verbose(process.argv, "cli")
 
