@@ -91,6 +91,8 @@ The following shorthands are parsed on the command-line:
 * `-l`: `--long`
 * `-desc`: `--description`
 * `-S`: `--save`
+* `-y`: `--yes`
+* `-n`: `--yes false`
 * `ll` and `la` commands: `ls --long`
 
 If the specified configuration param resolves unambiguously to a known
@@ -501,6 +503,14 @@ The tar executable
 Where to store temporary files and folders.  All temp files are deleted
 on success, but left behind on failure for forensic purposes.
 
+### unicode
+
+* Default: true
+* Type: Boolean
+
+When set to true, npm uses unicode characters in the tree output.  When
+false, it uses ascii characters to draw trees.
+
 ### unsafe-perm
 
 * Default: false if running as root, true otherwise
@@ -564,3 +574,14 @@ Only relevant when specified explicitly on the command line.
 * Type: path
 
 The program to use to view help content.
+
+### yes
+
+* Default: null
+* Type: Boolean or null
+
+If set to `null`, then prompt the user for responses in some
+circumstances.
+
+If set to `true`, then answer "yes" to any prompt.  If set to `false`
+then answer "no" to any prompt.

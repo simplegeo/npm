@@ -11,18 +11,18 @@ if (require.main === module) {
 
 var EventEmitter = require("events").EventEmitter
   , npm = module.exports = new EventEmitter
-  , config = require("./lib/config")
-  , set = require("./lib/utils/set")
-  , get = require("./lib/utils/get")
-  , ini = require("./lib/utils/ini")
-  , log = require("./lib/utils/log")
+  , config = require("./lib/config.js")
+  , set = require("./lib/utils/set.js")
+  , get = require("./lib/utils/get.js")
+  , ini = require("./lib/utils/ini.js")
+  , log = require("./lib/utils/log.js")
   , fs = require("graceful-fs")
   , path = require("path")
   , abbrev = require("abbrev")
-  , which = require("./lib/utils/which")
+  , which = require("which")
   , semver = require("semver")
-  , findPrefix = require("./lib/utils/find-prefix")
-  , getUid = require("./lib/utils/uid-number")
+  , findPrefix = require("./lib/utils/find-prefix.js")
+  , getUid = require("./lib/utils/uid-number.js")
 
 npm.commands = {}
 npm.ELIFECYCLE = {}
@@ -144,9 +144,24 @@ Object.keys(abbrevs).concat(plumbing).forEach(function (c) {
       npm.config.set("long", true)
     }
     if (commandCache[a]) return commandCache[a]
-    return commandCache[a] = require(__dirname+"/lib/"+a)
+    var cmd = require(__dirname+"/lib/"+a+".js")
+    commandCache[a] = function () {
+      if (typeof arguments[arguments.length - 1] !== "function") {
+        Array.prototype.push.call(arguments, defaultCb)
+      }
+      cmd.apply(npm, arguments)
+    }
+    Object.keys(cmd).forEach(function (k) {
+      commandCache[a][k] = cmd[k]
+    })
+    return commandCache[a]
   }, enumerable: fullList.indexOf(c) !== -1 })
 })
+
+function defaultCb (er, data) {
+  if (er) console.error(er.stack || er.message)
+  else console.log(data)
+}
 
 npm.deref = function (c) {
   if (plumbing.indexOf(c) !== -1) return c
@@ -157,31 +172,31 @@ npm.deref = function (c) {
 
 var loaded = false
   , loading = false
+  , loadErr = null
   , loadListeners = []
+
+function loadCb (er) {
+  loadListeners.forEach(function (cb) {
+    process.nextTick(cb.bind(npm, er, npm))
+  })
+  loadListeners.length = 0
+}
+
 
 npm.load = function (conf, cb_) {
   if (!cb_ && typeof conf === "function") cb_ = conf , conf = {}
   if (!cb_) cb_ = function () {}
   if (!conf) conf = {}
   loadListeners.push(cb_)
-  if (loaded) return cb()
+  if (loaded || loadErr) return cb(loadErr)
   if (loading) return
   loading = true
   var onload = true
 
-  function handleError (er) {
-    loadListeners.forEach(function (cb) {
-      process.nextTick(function () { cb(er, npm) })
-    })
-  }
-
   function cb (er) {
-    if (er) return handleError(er)
+    if (loadErr) return
     loaded = true
-    loadListeners.forEach(function (cb) {
-      process.nextTick(function () { cb(er, npm) })
-    })
-    loadListeners.length = 0
+    loadCb(loadErr = er)
     if (onload = onload && npm.config.get("onload-script")) {
       require(onload)
       onload = false
@@ -189,50 +204,69 @@ npm.load = function (conf, cb_) {
   }
 
   log.waitForConfig()
+
+  load(npm, conf, cb)
+}
+
+
+function load (npm, conf, cb) {
   which(process.argv[0], function (er, node) {
     if (!er && node !== process.execPath) {
       log.verbose("node symlink", node)
       process.execPath = node
       process.installPrefix = path.resolve(node, "..", "..")
     }
+
+    // look up configs
     ini.resolveConfigs(conf, function (er) {
-      if (er) return handleError(er)
-      var p
-      if (!npm.config.get("global")
-          && !conf.hasOwnProperty("prefix")) {
-        p = process.cwd()
-      } else {
-        p = npm.config.get("prefix")
+      if (er) return cb(er)
+
+      var n = 2
+        , errState
+
+      loadPrefix(npm, conf, next)
+      loadUid(npm, conf, next)
+
+      function next (er) {
+        if (errState) return
+        if (er) return cb(errState = er)
+        if (-- n <= 0) return cb()
       }
-
-      // if we're not in unsafe-perm mode, then figure out who
-      // to run stuff as.  Do this first, to support `npm update npm -g`
-      if (!npm.config.get("unsafe-perm")) {
-        getUid( npm.config.get("user"), npm.config.get("group")
-              , function (er, uid, gid) {
-          if (er) return log.er(cb, "Could not get uid/gid")(er)
-          next()
-        })
-      } else next()
-
-      function next () {
-        // try to guess at a good node_modules location.
-        findPrefix(p, function (er, p) {
-          if (er) return handleError(er)
-          Object.defineProperty(npm, "prefix",
-            { get : function () { return p }
-            , set : function (r) { return p = r }
-            , enumerable : true
-            })
-          return cb()
-        })
-      }
-
     })
   })
 }
 
-var path = require("path")
+
+function loadPrefix (npm, conf, cb) {
+  // try to guess at a good node_modules location.
+  var p
+  if (!npm.config.get("global")
+      && !conf.hasOwnProperty("prefix")) {
+    p = process.cwd()
+  } else {
+    p = npm.config.get("prefix")
+  }
+
+  findPrefix(p, function (er, p) {
+    Object.defineProperty(npm, "prefix",
+      { get : function () { return p }
+      , set : function (r) { return p = r }
+      , enumerable : true
+      })
+    cb()
+  })
+}
+
+
+function loadUid (npm, conf, cb) {
+  // if we're not in unsafe-perm mode, then figure out who
+  // to run stuff as.  Do this first, to support `npm update npm -g`
+  if (!npm.config.get("unsafe-perm")) {
+    getUid(npm.config.get("user"), npm.config.get("group"), cb)
+  } else cb()
+}
+
+
 npm.config =
   { get : function (key) { return ini.get(key) }
   , set : function (key, val) { return ini.set(key, val, "cli") }
@@ -267,3 +301,25 @@ Object.defineProperty(npm, "tmp",
     }
   , enumerable : true
   })
+
+// the better to repl you with
+Object.getOwnPropertyNames(npm.commands).forEach(function (n) {
+  if (npm.hasOwnProperty(n)) return
+
+  Object.defineProperty(npm, n, { get: function () {
+    return function () {
+      var args = Array.prototype.slice.call(arguments, 0)
+        , cb = defaultCb
+
+      if (args.length === 1 && Array.isArray(args[0])) {
+        args = args[0]
+      }
+
+      if (typeof args[args.length - 1] === "function") {
+        cb = args.pop()
+      }
+
+      npm.commands[n](args, cb)
+    }
+  }, enumerable: false, configurable: true })
+})

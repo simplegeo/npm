@@ -29,10 +29,10 @@ link: uninstall
 	node cli.js link -f
 
 clean: uninstall
+	node cli.js cache clean
 
 uninstall: submodules
-	node cli.js cache clean
-	node cli.js rm npm -g -f --loglevel error
+	node cli.js rm npm -g -f
 
 man: man1
 
