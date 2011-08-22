@@ -1,3 +1,9 @@
+nodejs-npm (1.0.26-0sg0) unstable; urgency=low
+
+  * New upstream release
+
+ -- Wade Simmons <wade@simplegeo.com>  Mon, 22 Aug 2011 22:44:31 +0000
+
 nodejs-npm (1.0.22-0sg47) UNRELEASED; urgency=low
 
   * UNRELEASED
