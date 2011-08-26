@@ -1,14 +1,6 @@
 
 process.title = "npm"
 
-if (require.main === module) {
-  console.error(["It looks like you're doing 'node npm.js'."
-                ,"Don't do that.  Instead, run 'make install'"
-                ,"and then use the 'npm' command line utility."
-                ].join("\n"))
-  process.exit(1)
-}
-
 var EventEmitter = require("events").EventEmitter
   , npm = module.exports = new EventEmitter
   , config = require("./lib/config.js")
@@ -134,7 +126,7 @@ var commandCache = {}
     })
   , abbrevs = abbrev(fullList)
 
-Object.keys(abbrevs).concat(plumbing).forEach(function (c) {
+Object.keys(abbrevs).concat(plumbing).forEach(function addCommand (c) {
   Object.defineProperty(npm.commands, c, { get : function () {
     if (!loaded) throw new Error(
       "Call npm.load(conf, cb) before using this command.\n"+
@@ -146,16 +138,25 @@ Object.keys(abbrevs).concat(plumbing).forEach(function (c) {
     if (commandCache[a]) return commandCache[a]
     var cmd = require(__dirname+"/lib/"+a+".js")
     commandCache[a] = function () {
-      if (typeof arguments[arguments.length - 1] !== "function") {
-        Array.prototype.push.call(arguments, defaultCb)
+      var args = Array.prototype.slice.call(arguments, 0)
+      if (typeof args[args.length - 1] !== "function") {
+        args.push(defaultCb)
       }
-      cmd.apply(npm, arguments)
+      if (args.length === 1) args.unshift([])
+      cmd.apply(npm, args)
     }
     Object.keys(cmd).forEach(function (k) {
       commandCache[a][k] = cmd[k]
     })
     return commandCache[a]
   }, enumerable: fullList.indexOf(c) !== -1 })
+
+  // make css-case commands callable via camelCase as well
+  if (c.match(/\-([a-z])/)) {
+    addCommand(c.replace(/\-([a-z])/g, function (a, b) {
+      return b.toUpperCase()
+    }))
+  }
 })
 
 function defaultCb (er, data) {
@@ -164,6 +165,10 @@ function defaultCb (er, data) {
 }
 
 npm.deref = function (c) {
+  if (!c) return ""
+  if (c.match(/[A-Z]/)) c = c.replace(/([A-Z])/g, function (m) {
+    return "-" + m.toLowerCase()
+  })
   if (plumbing.indexOf(c) !== -1) return c
   var a = abbrevs[c]
   if (aliases[a]) a = aliases[a]
@@ -323,3 +328,7 @@ Object.getOwnPropertyNames(npm.commands).forEach(function (n) {
     }
   }, enumerable: false, configurable: true })
 })
+
+if (require.main === module) {
+  require("./bin/npm.js")
+}
