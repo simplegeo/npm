@@ -1,3 +1,13 @@
+nodejs-npm (1.0.99-0sg52) UNRELEASED; urgency=low
+
+  [ Wade Simmons ]
+  * depend on git-core
+  * deal with some binaries in 'request'
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Wed, 19 Oct 2011 23:11:42 +0000
+
 nodejs-npm (1.0.99-0sg0) unstable; urgency=low
 
   * New upstream release
