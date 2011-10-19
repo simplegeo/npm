@@ -6,7 +6,7 @@ Maintainer: SimpleGeo Nerds <nerds@simplegeo.com>
 build-Depends: cdbs,
  debhelper (>= 7),
  nodejs (>= 0.4),
- git (>= 1:1.7)
+ git-core (>= 1:1.7)
 Standards-Version: 3.9.1
 
 Package: nodejs-npm
