@@ -1,28 +1,28 @@
 { "name" : "npm"
 , "description" : "A package manager for node"
 , "keywords" : [ "package manager", "modules", "install", "package.json" ]
-, "version" : "1.0.27"
+, "version" : "1.0.99"
 , "preferGlobal" : true
 , "config" : { "publishtest" : false }
 , "homepage" : "http://npmjs.org/"
 , "author" : "Isaac Z. Schlueter <i@izs.me> (http://blog.izs.me)"
 , "repository" :
   { "type" : "git"
-  , "url" : "https://github.com/isaacs/npm.git"
+  , "url" : "https://github.com/isaacs/npm"
   }
 , "bugs" :
-  { "mail" : "npm-@googlegroups.com"
-  , "web" : "http://github.com/isaacs/npm/issues"
+  { "email" : "npm-@googlegroups.com"
+  , "url" : "http://github.com/isaacs/npm/issues"
   }
 , "directories" : { "doc" : "./doc"
-                  , "man" : "./man1"
+                  , "man" : "./man"
                   , "lib" : "./lib"
                   , "bin" : "./bin"
                   }
-, "main" : "npm"
-, "bin" : { "npm" : "./bin/npm.js"
-          , "npm_g" : "./bin/npm.js"
-          , "npm-g" : "./bin/npm.js" }
+, "main" : "./lib/npm.js"
+, "bin" : { "npm" : "./bin/npm-cli.js"
+          , "npm_g" : "./bin/npm-cli.js"
+          , "npm-g" : "./bin/npm-cli.js" }
 , "dependencies" :
   { "semver" : "1"
   , "ini" : "1"
@@ -34,6 +34,7 @@
   , "node-uuid" : "1.2"
   , "proto-list": "1"
   , "rimraf" : "1"
+  , "request": "~2.1.1"
   , "which" : "1" }
 , "bundleDependencies" :
   [ "slide"
@@ -45,15 +46,18 @@
   , "nopt"
   , "node-uuid"
   , "rimraf"
+  , "request"
   , "proto-list"
   , "which" ]
-, "devDependencies" : { "ronn" : "" }
+, "devDependencies" :
+  { "ronn" : "https://github.com/isaacs/ronnjs/tarball/master" }
 , "engines" : { "node" : "0.4 || 0.5", "npm" : "1" }
-, "scripts" : { "test" : "./test/run.sh"
-              , "prepublish" : "make doc"
+, "scripts" : { "test" : "./test/run"
+              , "prepublish" : "make -j4 doc"
+              , "dumpconf": "env | grep npm | sort | uniq"
               }
 , "licenses" :
-  [ { "type" : "MIT"
+  [ { "type" : "MIT +no-false-attribs"
     , "url" : "http://github.com/isaacs/npm/raw/master/LICENSE"
     }
   ]

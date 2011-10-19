@@ -8,3 +8,8 @@ test/root
 node_modules/ronn
 node_modules/.bin
 npm-debug.log
+html/api/*.html
+html/doc/*.html
+man/
+doc/*/index.md
+./npmrc
